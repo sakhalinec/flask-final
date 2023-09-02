@@ -1,11 +1,8 @@
 from datetime import datetime, timedelta
 
 import jwt
-from flask import Flask, Blueprint, request, make_response, jsonify, current_app
-from werkzeug.security import check_password_hash, generate_password_hash
+from flask import  Blueprint, request, make_response, jsonify, current_app
 
-
-from flaskr.db import get_db
 from flaskr.validations import validate_auth_form
 from flaskr.models import User
 
@@ -40,5 +37,16 @@ def register():
         response = {"status": "fail", "message": err}
         return make_response(jsonify(response)), 400
 
-    resp, code = User(post_data).commit()
-    return make_response(jsonify(resp)), code
+    if err := User(post_data).commit():
+        resp = {
+            "status": "fail",
+            "message": err
+        }
+        return make_response(jsonify(resp)), 418
+    
+    resp = {
+        "status": "success",
+        "message": "Successfully registered. Please Login"
+    }
+
+    return make_response(jsonify(resp)), 201

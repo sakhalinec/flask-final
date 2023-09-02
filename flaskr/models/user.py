@@ -9,7 +9,7 @@ class User:
         self.password = generate_password_hash(form["password"])
         self.id = -1
 
-    def commit(self) -> tuple[dict, int]:
+    def commit(self) -> str:
         db = get_db()
 
         try:
@@ -19,12 +19,6 @@ class User:
             )
             db.commit()
         except db.IntegrityError:
-            return {
-                "status": "fail",
-                "message": "User already exists. Please Log in.",
-            }, 418
+            return "User already exists. Please Log in."
 
-        return {
-            "status": "success",
-            "message": "Successfully registered. Please Login",
-        }, 201
+        return ""
