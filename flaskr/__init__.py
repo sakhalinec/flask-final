@@ -3,7 +3,7 @@ import os
 from flask import Flask
 from .views import auth, blog
 from . import db
-from .api import auth_blueprint
+from .api import auth_blueprint, blog_blueprint
 
 
 def create_app(test_config=None):
@@ -21,7 +21,7 @@ def create_app(test_config=None):
 
     app.register_blueprint(auth.bp)
     app.register_blueprint(auth_blueprint)
-
+    app.register_blueprint(blog_blueprint)
     app.register_blueprint(blog.bp)
     app.add_url_rule("/", endpoint="index")
 

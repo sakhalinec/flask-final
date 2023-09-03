@@ -3,6 +3,8 @@ from werkzeug.exceptions import abort
 
 from flaskr.views.auth import login_required
 from flaskr.db import get_db
+from flaskr.validations import validate_post_form
+from flaskr.models import Post
 
 bp = Blueprint("blog", __name__)
 
@@ -22,22 +24,17 @@ def index():
 @login_required
 def create():
     if request.method == "POST":
-        title = request.form["title"]
-        body = request.form["body"]
-        error = None
+        data = {
+            "title": request.form.get("title", ""),
+            "body": request.form.get("body", ""),
+        }
 
-        if not title:
-            error = "Title is required."
+        if err := validate_post_form(data):
+            flash(err)
 
-        if error is not None:
-            flash(error)
         else:
-            db = get_db()
-            db.execute(
-                "INSERT INTO post (title, body, author_id)" " VALUES (?, ?, ?)",
-                (title, body, g.user.id),
-            )
-            db.commit()
+            Post(author_id=g.user.id, title=data["title"], body=data["body"]).commit()
+
             return redirect(url_for("blog.index"))
 
     return render_template("blog/create.html")
@@ -67,24 +64,23 @@ def get_post(id, check_author=True):
 @bp.route("/<int:id>/update", methods=("GET", "POST"))
 @login_required
 def update(id):
-    post = get_post(id)
+    post = Post.get_by_id(id)
+    if post is None:
+        abort(404, f"Post id {id} doesn't exist.")
+    if post.author_id != g.user.id:
+        abort(403)
 
     if request.method == "POST":
-        title = request.form["title"]
-        body = request.form["body"]
-        error = None
+        data = {
+            "title": request.form.get("title", ""),
+            "body": request.form.get("body", ""),
+        }
 
-        if not title:
-            error = "Title is required."
+        if err := validate_post_form(data):
+            flash(err)
 
-        if error is not None:
-            flash(error)
         else:
-            db = get_db()
-            db.execute(
-                "UPDATE post SET title = ?, body = ?" " WHERE id = ?", (title, body, id)
-            )
-            db.commit()
+            post.update(data["title"], data["body"])
             return redirect(url_for("blog.index"))
 
     return render_template("blog/update.html", post=post)

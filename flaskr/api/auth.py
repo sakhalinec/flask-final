@@ -21,7 +21,9 @@ def _encode_auth_token(user_id: int) -> str:
 
 def _decode_auth_token(auth_token: str) -> tuple[Optional[str], Optional[str]]:
     try:
-        payload = jwt.decode(auth_token, current_app.config.get("SECRET_KEY"), algorithms=["HS256"])
+        payload = jwt.decode(
+            auth_token, current_app.config.get("SECRET_KEY"), algorithms=["HS256"]
+        )
         return payload["sub"], None
     except jwt.ExpiredSignatureError:
         return None, "Signature expired"
@@ -76,8 +78,6 @@ def logout():
         return make_response(jsonify(responseObject)), 400
 
     _, token = auth_header.split(" ")
-
-    print(f"{token = }")
 
     _, err = _decode_auth_token(token)
     if err:
