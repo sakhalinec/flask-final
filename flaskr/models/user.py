@@ -1,14 +1,15 @@
+from dataclasses import dataclass
 from typing import Self, Optional
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from flaskr.db import get_db
 
 
+@dataclass
 class User:
-    def __init__(self, username: str, password: str, id: Optional[int] = None) -> None:
-        self.username = username
-        self.password = password
-        self.id = id or -1
+    username: str
+    password: str
+    id: int = -1
 
     @classmethod
     def from_post_data(cls, form: dict) -> Self:

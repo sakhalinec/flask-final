@@ -1,6 +1,7 @@
 import requests
 import time
 
+
 def test_get_all_posts():
     resp = requests.get(
         url="http://127.0.0.1:5000/api/blog",
@@ -40,6 +41,7 @@ def test_update_post_with_timeout():
     )
 
     print(resp.json())
+
 
 def test_update_post_with_logout():
     resp = requests.post(

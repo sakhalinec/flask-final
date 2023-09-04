@@ -50,7 +50,7 @@ def auth_required(handler):
                 "message": "Token Blacklisted",
             }
             return make_response(jsonify(responseObject)), 400
-        
+
         user_id, err = _decode_auth_token(token)
         if err:
             responseObject = {"status": "fail", "message": err}
