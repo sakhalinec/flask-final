@@ -12,7 +12,7 @@ auth_blueprint = Blueprint("authAPI", __name__, url_prefix="/api/auth")
 
 def _encode_auth_token(user_id: int) -> str:
     payload = {
-        "exp": datetime.utcnow() + timedelta(days=0, seconds=50),
+        "exp": datetime.utcnow() + timedelta(days=0, seconds=5),
         "iat": datetime.utcnow(),
         "sub": user_id,
     }

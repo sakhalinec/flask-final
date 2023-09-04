@@ -4,7 +4,7 @@ from dataclasses import asdict
 import jwt
 from flask import Blueprint, request, make_response, jsonify, current_app
 
-from flaskr.models import Post
+from flaskr.models import Post, BlackJWToken
 from flaskr.validations import validate_post_form
 
 
@@ -44,6 +44,13 @@ def auth_required(handler):
 
         _, token = auth_header.split(" ")
 
+        if BlackJWToken(token).is_blacklisted():
+            responseObject = {
+                "status": "fail",
+                "message": "Token Blacklisted",
+            }
+            return make_response(jsonify(responseObject)), 400
+        
         user_id, err = _decode_auth_token(token)
         if err:
             responseObject = {"status": "fail", "message": err}
