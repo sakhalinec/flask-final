@@ -22,6 +22,6 @@ class BlackJWToken:
         db = get_db()
         return bool(
             db.execute(
-                f"SELECT token from invalidtokens WHERE token='{self.token}'",
+                "SELECT token from invalidtokens WHERE token = ? ", (self.token,)
             ).fetchone()
         )

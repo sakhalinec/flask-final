@@ -1,34 +1,10 @@
-from datetime import datetime, timedelta
-from typing import Optional
-
-import jwt
-from flask import Blueprint, request, make_response, jsonify, current_app
+from flask import Blueprint, request, make_response, jsonify
 
 from flaskr.validations import validate_auth_form
 from flaskr.models import User, BlackJWToken
+from flaskr.token import decode_auth_token, encode_auth_token
 
 auth_blueprint = Blueprint("authAPI", __name__, url_prefix="/api/auth")
-
-
-def _encode_auth_token(user_id: int) -> str:
-    payload = {
-        "exp": datetime.utcnow() + timedelta(days=0, seconds=5),
-        "iat": datetime.utcnow(),
-        "sub": user_id,
-    }
-    return jwt.encode(payload, current_app.config.get("SECRET_KEY"), algorithm="HS256")
-
-
-def _decode_auth_token(auth_token: str) -> tuple[Optional[str], Optional[str]]:
-    try:
-        payload = jwt.decode(
-            auth_token, current_app.config.get("SECRET_KEY"), algorithms=["HS256"]
-        )
-        return payload["sub"], None
-    except jwt.ExpiredSignatureError:
-        return None, "Signature expired"
-    except jwt.InvalidTokenError:
-        return None, "Invalid token"
 
 
 @auth_blueprint.route("/register", methods=["POST"])
@@ -58,7 +34,7 @@ def login():
         return make_response(jsonify(response)), 400
 
     if user := User.get_one(post_data):
-        auth_token = _encode_auth_token(user.id)
+        auth_token = encode_auth_token(user.id)
         responseObject = {
             "status": "success",
             "message": "Successfully logged in.",
@@ -79,7 +55,7 @@ def logout():
 
     _, token = auth_header.split(" ")
 
-    _, err = _decode_auth_token(token)
+    _, err = decode_auth_token(token)
     if err:
         responseObject = {"status": "fail", "message": err}
         return make_response(jsonify(responseObject)), 400

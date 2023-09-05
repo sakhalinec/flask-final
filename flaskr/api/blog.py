@@ -1,26 +1,13 @@
 import functools
-from typing import Optional
 from dataclasses import asdict
-import jwt
 from flask import Blueprint, request, make_response, jsonify, current_app
 
 from flaskr.models import Post, BlackJWToken
 from flaskr.validations import validate_post_form
+from flaskr.token import decode_auth_token
 
 
 blog_blueprint = Blueprint("blogAPI", __name__, url_prefix="/api/blog")
-
-
-def _decode_auth_token(auth_token: str) -> tuple[Optional[int], Optional[str]]:
-    try:
-        payload = jwt.decode(
-            auth_token, current_app.config.get("SECRET_KEY"), algorithms=["HS256"]
-        )
-        return int(payload["sub"]), None
-    except jwt.ExpiredSignatureError:
-        return None, "Signature expired"
-    except jwt.InvalidTokenError:
-        return None, "Invalid token"
 
 
 @blog_blueprint.route("/", methods=["GET"])
@@ -51,7 +38,7 @@ def auth_required(handler):
             }
             return make_response(jsonify(responseObject)), 400
 
-        user_id, err = _decode_auth_token(token)
+        user_id, err = decode_auth_token(token)
         if err:
             responseObject = {"status": "fail", "message": err}
             return make_response(jsonify(responseObject)), 400
