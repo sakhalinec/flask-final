@@ -52,3 +52,12 @@ class Post:
             (self.title, self.body, self.id),
         )
         db.commit()
+
+    def delete(self) -> None:
+        db = get_db()
+        db.execute(
+            "DELETE FROM post WHERE id = ?",
+            (self.id, ),
+        )
+        db.commit()
+

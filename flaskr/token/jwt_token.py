@@ -1,9 +1,6 @@
 from datetime import datetime, timedelta
 from typing import Optional
-
-
 from flask import current_app
-
 import jwt
 
 

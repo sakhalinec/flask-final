@@ -14,7 +14,7 @@ blog_blueprint = Blueprint("blogAPI", __name__, url_prefix="/api/blog")
 def index():
     resp = []
     for post in Post.get_all():
-        resp.append(asdict(post))
+        resp.append(post)#asdict(post))
     return make_response(jsonify(resp)), 200
 
 
@@ -100,3 +100,23 @@ def update(id: int, user_id: int):
         ),
         201,
     )
+
+
+@blog_blueprint.route("/delete/<int:id>", methods=["DELETE"])
+@auth_required
+def delete(id: int, user_id: int):
+
+    post = Post.get_by_id(id)
+    if post is None:
+        response = {"status": "fail", "message": f"Failed to Find Post with id: {id}"}
+        return make_response(jsonify(response)), 404
+
+    if post.author_id != user_id:
+        response = {"status": "fail", "message": "Permission Denied"}
+        return make_response(jsonify(response)), 403
+
+    post.delete()
+    response = {"status": "success", "message": "Post removed", "post": id}
+    return make_response(jsonify(response)), 200
+
+
